@@ -1,0 +1,50 @@
+*{
+    margin: 0px auto;
+}
+form{
+    border: solid 2px;
+    border-radius: 10px;
+    width: 280px;
+    padding: 10px;
+}
+label, input, h2{
+    display: block;
+    text-align: center;
+}
+h1{
+    text-align: center;
+}
+div{
+    margin: 20px;
+}
+label{
+    margin: 5px;
+}
+#login{
+    background-color: #0E6FFB;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    border:  solid #0E6FFB;
+}
+#register{
+    background-color: green;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    border:  solid green;
+}
+input{
+    padding: 5px;
+    border-radius: 5px;
+}
+.error{
+    text-align: center;
+    color: white;
+    background-color: red;
+}
+.success{
+    text-align: center;
+    color: white;
+    background-color: green;
+}

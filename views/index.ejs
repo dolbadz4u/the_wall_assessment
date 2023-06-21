@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login and Register</title>
+</head>
+<body>
+    <% if(errors && errors.length > 0){ %>
+        <% for(let i = 0; i < errors.length; i++){ %>
+    <p><%= errors[i] %></p>
+        <% } %>
+    <% } %>
+    <% if(typeof success !== 'undefined' && success.length > 0){ %>
+        <p><%= success %></p>
+    <% } %>
+    <h1>Welcome</h1>
+    <h1>Register</h1>
+    <form action="/register" method="post">
+        First Name: <input type="text" name="first_name">
+        Last Name: <input type="text" name="last_name">
+        Email: <input type="text" name="email">
+        Password: <input type="password" name="password">
+        Confirm Password: <input type="password" name="confirm_password">
+        <input type="submit" value="Register">
+    </form>
+    <h1>Login</h1>
+    <form action="/login" method="post">
+        Email: <input type="text" name="login_email">
+        Password: <input type="password" name="login_password">
+        <input type="submit" value="Login">
+    </form>
+</body>
+</html>
