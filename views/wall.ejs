@@ -5,8 +5,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Wall</title>
+    <link rel="stylesheet" href="../assets/stylesheets/wall-style.css">
 </head>
 <body>
+    <% if(errors){ %> 
+    <p><%= errors %></p>
+    <% } %>
     <h1>Welcome to the Wall</h1>
     <a href="/logout">Logout</a>
     <h2>Create a Post</h2>
@@ -14,42 +18,35 @@
         <input type="text" name="post_field">
         <input type="submit" value="Create Post">
     </form>
-
-    <div>
-        <% for(let x in posts){ %>
-            <div class="messages">
-                <h3><%= posts[x].poster %> - <%= posts[x].message_date %></h3>
-                <p><%= posts[x].message %></p>
-            <% if(posts[x].user_id === user[0].id){ %>
-                <form action="/delete_post" method="post">
-                    <input type="hidden" name="user_id" value="<%= posts[x].user_id %>">
-                    <input type="hidden" name="message_id" value="<%= posts[x].message_id %>">
-                    <input type="submit" value="Delete Post">
-                </form>
-                <% for(let i in comments){ %>
-                    <% if(comments[i].message_id === posts[x].message_id){ %>
-                        <div class="comments">
-                            <h3><%= comments[i].commenter %> - <%= comments[i].comment_date %></h3>
-                            <p><%= comments[i].comment %></p>
-                        <% if(comments[i].user_id === user[0].id){ %>
-                            <form action="/delete_comment" method="post">
-                                <input type="hidden" name="user_id" value="<%= comments[i].user_id %>">
-                                <input type="hidden" name="message_id" value="<%= comments[i].message_id %>">
-                                <input type="hidden" name="comment_id" value="<%= comments[i].comment_id %>">
-                                <input type="submit" value="Delete Comment">
-                            </form>
-                        <% } %>
-                        </div>
-                    <% } %>
-                <% } %>
-                <form action="/post_comment" method="post">
-                    <input type="hidden" name="message_id" value="<%= posts[x].message_id %>">
-                    <input type="text" name="comment_field">
-                    <input type="submit" value="Submit Comment">
-                </form>
-            <% } %>
-            </div>
+    <% for(let index in posts) { %>
+        <div class="messages">
+            <h3><%= posts[index].posted_by %> - <%= posts[index].created_at %></h3>
+            <p><%= posts[index].message %></p>
+        </div>
+        <% if(posts[index].user_id === user.user_id){ %>
+            <form action="/delete_post" method="post">
+                <input type="hidden" name="message_id" value="<%= posts[index].id %>">
+                <input type="submit" value="Delete Post">
+            </form>
         <% } %>
-    </div>
+            <% for(comment_id in  posts[index].comments){  %>
+                <div class="comments">
+                    <h3>Comment by: <%= posts[index].comments[comment_id].commented_by %> - <%= posts[index].comments[comment_id].created_at %></h3>
+                    <p><%= posts[index].comments[comment_id].comment %></p>
+                    <% if(posts[index].comments[comment_id].comment_user_id === user.user_id){ %>
+                        <form action="/delete_comment" method="post">
+                            <input type="hidden" name="comment_id" value="<%= posts[index].comments[comment_id].comment_id %>">
+                            <input type="submit" value="Delete Comment">
+                        </form>
+                    <% } %>
+                </div>                
+            <% } %>
+            <form action="/post_comment" method="post">
+                <input type="text" name="comment_field">
+                <input type="hidden" name="message_id" value="<%= posts[index].id %>">
+                <input type="submit" value="Submit Comment">
+            </form>
+    <% } %>
 </body>
+
 </html>

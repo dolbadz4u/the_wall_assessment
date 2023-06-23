@@ -2,29 +2,30 @@ const User = require("../models/User");
 
 class Users{
     showHome = (req, res) => {
-        const errors = req.session.errors;
+        let errors = req.session.errors;
         req.session.errors = [];
 
-        const success = req.session.success;
+        let success = req.session.success;
         req.session.success = "";
-
-        req.session.user_details ? res.redirect("/wall") : res.render("index", { errors, success });
+        
+        req.session.user  ? res.redirect("/wall") : res.render("index", { errors, success });
     }
 
     register = async (req, res) => {
         try{
-            const { first_name, last_name, email, password, confirm_password } = req.body;
-            const user_details = [ first_name, last_name, email, password, confirm_password ];
+            let { first_name, last_name, email, password, confirm_password } = req.body;
+            let user_details = [ first_name, last_name, email, password, confirm_password ];
+
             let success_message = "Registration Successful";
 
-            const errors = await User.validateUserRegistration(user_details);
+            let errors = await User.validateUserRegistration(user_details);
 
             if(errors.length > 0){
                 req.session.errors = errors;
                 return res.redirect("/");
             }
 
-            const result = User.registerUser(user_details);
+            let result = User.registerUser(user_details);
 
             if(result){
                 req.session.success = success_message;
@@ -39,21 +40,26 @@ class Users{
 
     login = async (req, res) => {
         try{
-            const { login_email, login_password } = req.body;
-            const login_details = [ login_email, login_password ];
+            let { login_email, login_password } = req.body;
+            let login_details = [ login_email, login_password ];
 
-            const errors = await User.validateLoginDetails(login_details);
+            let errors = await User.validateLoginDetails(login_details);
 
             if(errors.length > 0){
                 req.session.errors = errors;
                 return res.redirect("/");
             }
+            else{
+                let user = await User.loginUser(login_details);
 
-            const result = await User.loginUser(login_details);
-
-            if(result){
-                req.session.user_details = result;
-                res.redirect("/wall")
+                if(user){
+                    req.session.user = {
+                        user_id : user.result[0].id
+                    };
+                    
+                    res.redirect("/wall")
+                }
+                
             }
         }
         catch(error){

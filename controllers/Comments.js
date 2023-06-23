@@ -3,10 +3,17 @@ const Comment = require("../models/Comment");
 class Comments{
     addComment = async (req, res) => {
         try{
-            const user_comment = [ req.session.user_details[0].id, req.body.message_id, req.body.comment_field ];
-            const result = await Comment.createComment(user_comment);
+            const validateComment = await Comment.validateComment( req.body.comment_field );
 
-            if(result){
+            if(validateComment.status){
+                const result = await Comment.createComment( [ req.session.user.user_id, req.body.message_id, req.body.comment_field ] );
+    
+                if(result){
+                    res.redirect("/wall");
+                }
+            }
+            else{
+                req.session.errors = validateComment.error;
                 res.redirect("/wall");
             }
         }
@@ -16,12 +23,11 @@ class Comments{
     }
 
     deleteComment = async (req, res) => {
-        const user_id = req.session.user_details[0].id;
-        const message_id = req.body.message_id;
+        const user_id = req.session.user.user_id;
         const comment_id = req.body.comment_id;
 
         try{
-            const result = await Comment.deleteComment(comment_id, user_id, message_id);
+            const result = await Comment.deleteComment(comment_id, user_id);
             res.redirect("/wall");
         }
         catch(error){

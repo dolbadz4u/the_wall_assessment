@@ -1,14 +1,14 @@
-const mysql = require("mysql2");
-const connection = mysql.createConnection({
+const constant = {};
+
+constant.PORT = 4567;
+
+constant.DATABASE = {
     host: "localhost",
     user: "root",
     password: "",
     database: "logreg",
     port: "3306"
-});
+};
 
-connection.connect();
-
-console.log("DATABASE CONNECTED!")
-
-module.exports = connection;
+console.log("DATABASE CONNECTED!");
+module.exports = constant;

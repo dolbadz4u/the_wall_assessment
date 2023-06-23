@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const session = require('express-session');
-const routes = require("./routes");
+const routes = require("./routes/routes.js");
 
 app.use(express.static(__dirname + "/assets"));
 app.use(bodyParser.urlencoded({extended: true}));

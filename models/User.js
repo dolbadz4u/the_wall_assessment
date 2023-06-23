@@ -1,15 +1,15 @@
-const db = require("../config/database");
+const dbconnection = require("../models/Connection");
 const mysql = require("mysql2");
 
 class User{
     registerUser = async (user_details) => {
         let response_data = { status: false, result: [], error: null };
+
         try{
             let insert_user_details = mysql.format(`INSERT INTO users (first_name, last_name, email, password, created_at, updated_at)
                                                     VALUES (?, ?, ?, ?, NOW(), NOW())`, user_details);
 
-            response_data.status = true;
-            response_data.result = db.query(insert_user_details);
+            response_data = await dbconnection.executeQuery(insert_user_details);
         } 
         catch(error){
             response_data.error = error;
@@ -22,27 +22,14 @@ class User{
         let response_data = { status: false, result: [], error: null };
         
         try{
-            let fetch_user = `SELECT * FROM users WHERE email = ? AND password = ?`;
-
-            const result = await new Promise(function(resolve, reject){
-                db.query(fetch_user, login_details, (error, result) => {
-                    if(error){
-                        response_data.error = error;
-                        reject(response_data);
-                    }
-                    else{
-                        response_data.status = true;
-                        response_data.result = result;
-                        resolve(result);
-                    }
-                });
-            });
-
-            return result;
+            let fetch_user = mysql.format(`SELECT * FROM users WHERE email = ? AND password = ?`, login_details);
+            response_data = await dbconnection.executeQuery(fetch_user);
         }
         catch(error){
-            throw error;
+            response_data.error = error;
         }
+
+        return response_data;
     }
 
     validateUserRegistration = async (user_details) => {
@@ -74,7 +61,6 @@ class User{
     validateLoginDetails = async (login_details) => {
         const [ login_email, login_password ] = login_details;
         const errors = [];
-        const user = await this.loginUser(login_details);
 
         if(!login_email){
             errors.push("Email required");
@@ -82,10 +68,7 @@ class User{
         if(!login_password){
             errors.push("Password required");
         }
-        if(!user || login_password !== user[0].password){
-            errors.push("Invalid email or password");
-        }
-        
+ 
         return errors;
     }
 }

@@ -1,55 +1,53 @@
-const db = require("../config/database");
+const dbconnection = require("../models/Connection");
+const mysql = require("mysql2");
 
 class Post{
-    getPosts = async () => {
+    getPostsComments = async () => {
         let response_data = { status: false, result: [], error: null };
         
         try{
-            let fetch_posts = `SELECT users.id AS user_id, posts.id AS message_id, posts.message, DATE_FORMAT(posts.created_at, '%M/%d/%Y') AS message_date, CONCAT(users.first_name, ' ', users.last_name) AS poster
-                               FROM posts
-                               INNER JOIN users ON users.id = posts.user_id
-                               ORDER BY message_id DESC`;
+            let fetch_posts = mysql.format(`SELECT posts.id, posts.message, posts.user_id AS user_id, DATE_FORMAT(posts.created_at, "%M/%d/%Y") AS created_at, CONCAT(users.first_name, " ", users.last_name) AS posted_by,
+                                                (
+                                                    SELECT JSON_OBJECTAGG(
+                                                        comments.id, 
+                                                        JSON_OBJECT(
+                                                            'comment_id', comments.id,
+                                                            'comment', comments.comment,
+                                                            'message_id', comments.message_id,
+                                                            'commented_by', CONCAT(users.first_name, " ", users.last_name),
+                                                            'created_at', DATE_FORMAT(comments.created_at, "%M/%d/%Y"),
+                                                            'comment_user_id', comments.user_id
+                                                        )
+                                                    )
+                                                    FROM comments
+                                                    INNER JOIN users ON users.id = comments.user_id
+                                                    WHERE comments.message_id = posts.id
+                                                    
+                                                ) AS comments
+                                            FROM posts
+                                            INNER JOIN users ON users.id = posts.user_id
+                                            ORDER BY posts.id DESC;`);
 
-            const result = await new Promise(function(resolve, reject){
-                db.query(fetch_posts, function(error, result){
-                    if(error){
-                        response_data.error = error;
-                        reject(response_data);
-                    }
-                    else{
-                        response_data.status = true;
-                        response_data.result = result;
-                        resolve(response_data);
-                    }
-                });
-            });
-
-            return result;
+            response_data = await dbconnection.executeQuery(fetch_posts);
         }
         catch(error){
-            throw error;
+            response_data.error = error;
         }
+
+        return response_data;
     }
 
     createPost = async (user_message) => {
         let response_data = { status: true, result: [], error: null };
 
         try{
-            let insert_post = `INSERT INTO posts (user_id, message, created_at, updated_at)
-                               VALUES (?, ?, NOW(), NOW())`;
+            let insert_post = mysql.format(`INSERT INTO posts (user_id, message, created_at, updated_at)
+                               VALUES (?, ?, NOW(), NOW())`, user_message);
 
-            db.query(insert_post, user_message, function(error, result){
-                if(error){
-                    response_data.error = error;
-                }
-                else{
-                    response_data.status = true;
-                    response_data.result = result;
-                }
-            });
+            response_data = await dbconnection.executeQuery(insert_post);
         }
         catch(error){
-            throw error;
+            response_data.error = error;
         }
 
         return response_data;
@@ -57,26 +55,30 @@ class Post{
 
     deletePost = async (message_id, user_id) => {
         let response_data = { status: true, result: [], error: null };
+
         try{
-            let delete_query = `DELETE FROM posts WHERE id = ? AND user_id = ?`;
-            const result = await new Promise(function(resolve, reject){
-                db.query(delete_query, [ message_id, user_id ], function(error, result){
-                    if(error){
-                        response_data.error = error;
-                        reject(response_data);
-                    }
-                    else{
-                        response_data.status = true;
-                        response_data.result = result;
-                        resolve(response_data);
-                    }
-                });
-            });
-            return response_data;
+            let delete_query = mysql.format(`DELETE FROM posts WHERE id = ? AND user_id = ?`, [ message_id, user_id ]);
+           
+            response_data = await dbconnection.executeQuery(delete_query);
         }
         catch(error){
-            throw error;
+            response_data.error = error;
         }
+
+        return response_data;
+    }
+
+    validatePost = async (user_input) => {
+        let response_data = { status: false, result: [], error: null };
+
+        if(user_input === ""){
+            response_data.error = "Message field should not be blank!";
+        }
+        else{
+            response_data.status = true;
+        }
+
+        return response_data;
     }
 }
 
